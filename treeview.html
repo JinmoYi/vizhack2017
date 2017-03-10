@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.min.js"></script>
+     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+      <title>Angular: AF Treeview1</title>
+<style>
+.gg{color:red;}
+.aa {
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+
+    -moz-animation-name: blinker;
+    -moz-animation-duration: 1s;
+    -moz-animation-timing-function: linear;
+    -moz-animation-iteration-count: infinite;
+
+    animation-name: blinker;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@-moz-keyframes blinker {  
+    0% { opacity: 1.0; }
+    50% { opacity: 0.0; }
+    100% { opacity: 1.0; }
+}
+
+@-webkit-keyframes blinker {  
+    0% { opacity: 1.0; }
+    50% { opacity: 0.0; }
+    100% { opacity: 1.0; }
+}
+
+@keyframes blinker {  
+    0% { opacity: 1.0; }
+    50% { opacity: 0.0; }
+    100% { opacity: 1.0; }
+}
+</style>
+   </head>
+   <body ng-app="myApp">
+
+      <script type="text/ng-template" id="tree_item_renderer.html">
+         <a ng-href="{{data.selfLink}}" id="{{data.path}}">{{data.name}}</a>
+         <ul>
+           <li ng-repeat="data in data.children" ng-include="'tree_item_renderer.html'"></li>
+         </ul>
+      </script>
+
+      <ul ng-controller="TreeController">
+         <li ng-repeat="data in tree" ng-include="'tree_item_renderer.html'"></li>
+      </ul>
+
+      <script type='text/javascript'>
+         angular.module("myApp", []).controller("TreeController", ['$scope', '$http', function($scope, $http) {
+         
+         
+$scope.add = function(data) {
+  $http({
+    method: 'GET',
+    url: data.link,
+    withCredentials: true
+  }).then(function createNode(collection) {
+    collection.data.Items.map(function(item) {
+      if (item.Name != "Configuration") {
+        data.children.push({
+          name: item.Name,
+          children: [],
+          link: item.Links.Databases || item.Links.Elements,
+          selfLink: item.Links.Self,
+          path: item.Path
+        });
+      }
+    });
+    for (d in data.children) {
+      $scope.add(data.children[d]);
+    }
+  });
+};
+
+         $scope.tree = [{
+           name: "PI Web API",
+           children: [],
+           link: 'https://pisrv01.pischool.int/piwebapi/assetservers/S0_BJ6yxOWfEu1XN8dxGow1gUElTUlYwMQ/assetdatabases',
+           selfLink: 'https://pisrv01.pischool.int/piwebapi/assetservers/S0_BJ6yxOWfEu1XN8dxGow1gUElTUlYwMQ'
+         }];
+         
+         $scope.add($scope.tree[0]);
+$( "ul" ).click( handler1 );
+         }]);
+         
+
+function handler1( event ) {
+  var target = $( event.target );
+  if ( target.is( "li" ) ) {
+    target.children("ul").toggle();
+  }
+}
+
+$(function() {
+    //.find( "ul" ).hide();
+});
+
+      </script>
+   </body>
+</html>
